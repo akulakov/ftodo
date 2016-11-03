@@ -6,7 +6,7 @@ import os, sys
 
 itemdb="/Users/ak/Dropbox/etodo/todoitems"
 # itemdb="todoitems.db"
-itemdb="todoitems"
+itemdb = "todoitems"
 
 class Item:
     def __init__(self, n):
@@ -33,12 +33,12 @@ class Item:
 class Items:
     def __init__(self):
         s = shelve.open(itemdb)
-        self.items = s.get('items') or []
-        self.folders = s.get('folders') or dict(a=self.items)
+        items = s.get('items') or []
+        self.folders = s.get('folders')
+        if not self.folders:
+            self.folders = dict(a=items)
         self.current_folder = s.get('current_folder') or 'a'
         self.items = self.folders[self.current_folder]
-
-        # print("self.items", self.items)
 
     def add_folder(self, name):
         if name not in self.folders:
@@ -58,7 +58,6 @@ class Items:
     def save(self):
         s = shelve.open(itemdb)
         # print("self.items", self.items)
-        s['items'] = self.items
         s['folders'] = self.folders
         s['current_folder'] = self.current_folder
         s.close()
