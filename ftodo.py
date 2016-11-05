@@ -173,12 +173,16 @@ class ETodo:
             cmd = g.pop(0)
             if g:
                 arg = g.pop()
+        cmd = cmd.strip()
+        # print("cmd", cmd)
+        # print("arg", arg)
 
+        self.skip_listing = True    # listing is skipped on any error and most commands except those in `skip_listing`
         if cmd in cmds:
             try:
                 getattr(self, cmds[cmd])(arg)
-                if cmd in skip_listing:
-                    self.skip_listing = True
+                if cmd not in skip_listing:
+                    self.skip_listing = False
             except Exception as e:
                 print("ERROR: %s"%e)
         else:
@@ -229,7 +233,7 @@ class ETodo:
         for i in indexes:
             i = int(i)-1
             i = list(filter(None, self.items_))[i]
-            self.items_[i].status=2
+            i.status=2
 
     def rename(self, indexes):
         for i in indexes:
