@@ -77,6 +77,7 @@ class Items:
             self.folders[self.current_folder] = self.items
             self.items = self.folders[name]
             self.current_folder = name
+            return True
 
     def save(self):
         s = shelve.open(itemdb)
@@ -117,17 +118,8 @@ class ETodo:
         while True:
             # print(items.items)
             self.items_ = items.normal() + [None] + items.faded()
-            n=1
             if not self.skip_listing:
-                for i in self.items_:
-                    if i is None:
-                        print()
-                    else:
-                        if len(self.items_)<11:
-                            print("{0}) {1}".format(n,i))
-                        else:
-                            print("{0:>2}) {1}".format(n,i))
-                        n+=1
+                self.display_current()
             self.skip_listing=0
 
             i = input('[%s] > ' % items.current_folder).strip()
@@ -138,6 +130,29 @@ class ETodo:
                 self.quit()
             self.cmd(i)
 
+    def show_folder(self, name):
+        cur = items.current_folder
+        ok = items.set_current_folder(name)
+        if ok:
+            print()
+            print(items.current_folder)
+            print('---')
+            self.display_current()
+            items.set_current_folder(cur)
+
+    def display_current(self):
+        self.items_ = items.normal() + [None] + items.faded()
+        n=1
+        for i in self.items_:
+            if i is None:
+                print()
+            else:
+                if len(self.items_)<11:
+                    print("{0}) {1}".format(n,i))
+                else:
+                    print("{0:>2}) {1}".format(n,i))
+                n+=1
+
     def quit(self):
         items.save()
         print("Items saved!")
@@ -146,13 +161,14 @@ class ETodo:
     def cmd(self, i):
         i = i.strip()
         cmds = dict(a='add', R='delete', d='done', f='fade', e='expire', b='bump', E='expired', h='help', D='list_done', r='rename', o='folder',
+                    s='show_folder',
                     # double letter commands
                     EE='empty_expired', AF='add_folder', lf='list_folders', RF='delete_folder',
                     )
 
         # these commands should skip listing current items because user needs to see their output
         # (i.e. not to have it scrolled up and hidden)
-        skip_listing = "h D EE AF lf RF".split()
+        skip_listing = "s h D EE AF lf RF".split()
 
         single_match = re.match('^(\D)$', i)
         # n+ number index arguments
@@ -204,7 +220,9 @@ class ETodo:
           lf) list folders
           D)one list
           r)ename
-          h)elp""")
+          s)how folder
+          h)elp
+              """)
 
     def list_folders(self, arg):
         print()
